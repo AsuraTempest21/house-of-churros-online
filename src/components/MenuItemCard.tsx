@@ -8,8 +8,8 @@ interface MenuItemCardProps {
 }
 
 const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
-  const { addToCart, getAdjustedPrice } = useStore();
-  const adjustedPrice = getAdjustedPrice(item.price);
+  const { addToCart } = useStore();
+  const adjustedPrice = item.price;
 
   if (variant === 'featured') {
     return (

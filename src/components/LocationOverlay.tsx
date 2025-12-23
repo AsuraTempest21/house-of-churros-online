@@ -1,6 +1,7 @@
 import { X, MapPin, Clock, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, locations, Location } from '@/contexts/StoreContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface LocationOverlayProps {
   isOpen: boolean;
@@ -34,35 +35,35 @@ const LocationOverlay = ({ isOpen, onClose }: LocationOverlayProps) => {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-3xl shadow-2xl max-h-[80vh] overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col"
           >
-            <div className="flex flex-col h-full">
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-2">
-                <div className="w-12 h-1.5 rounded-full bg-border" />
-              </div>
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-2 shrink-0">
+              <div className="w-12 h-1.5 rounded-full bg-border" />
+            </div>
 
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                <div>
-                  <h2 className="text-xl font-bold text-foreground">
-                    Select Location
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Choose your nearest branch in Pune
-                  </p>
-                </div>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onClose}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors"
-                >
-                  <X className="h-6 w-6 text-foreground" />
-                </motion.button>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">
+                  Select Location
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose your nearest branch in Pune
+                </p>
               </div>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="p-2 rounded-full hover:bg-secondary transition-colors"
+              >
+                <X className="h-6 w-6 text-foreground" />
+              </motion.button>
+            </div>
 
-              {/* Locations List */}
-              <div className="flex-1 overflow-y-auto p-4">
+            {/* Locations List - Scrollable */}
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-4">
                 <ul className="space-y-3">
                   {locations.map((location, index) => {
                     const isSelected = selectedLocation.id === location.id;
@@ -81,27 +82,29 @@ const LocationOverlay = ({ isOpen, onClose }: LocationOverlayProps) => {
                               : 'bg-card border border-border hover:border-primary/50'
                           }`}
                         >
-                          <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                          <div className={`flex items-center justify-center w-12 h-12 rounded-full shrink-0 ${
                             isSelected ? 'bg-primary' : 'bg-secondary'
                           }`}>
                             <MapPin className={`h-6 w-6 ${
                               isSelected ? 'text-primary-foreground' : 'text-foreground'
                             }`} />
                           </div>
-                          <div className="flex-1 text-left">
+                          <div className="flex-1 text-left min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-lg font-semibold text-foreground">
+                              <span className="text-lg font-semibold text-foreground truncate">
                                 {location.name}
                               </span>
                               {isSelected && (
-                                <Check className="h-5 w-5 text-primary" />
+                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                                  <Check className="h-3 w-3 text-primary-foreground" />
+                                </div>
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">
                               {location.address}
                             </p>
                             <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                              <Clock className="h-3.5 w-3.5" />
+                              <Clock className="h-3.5 w-3.5 shrink-0" />
                               <span>{location.timings}</span>
                             </div>
                           </div>
@@ -111,7 +114,7 @@ const LocationOverlay = ({ isOpen, onClose }: LocationOverlayProps) => {
                   })}
                 </ul>
               </div>
-            </div>
+            </ScrollArea>
           </motion.div>
         </>
       )}

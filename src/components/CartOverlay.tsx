@@ -9,7 +9,7 @@ interface CartOverlayProps {
 }
 
 const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
-  const { cart, updateQuantity, removeFromCart, getCartTotal, getAdjustedPrice, clearCart } = useStore();
+  const { cart, updateQuantity, removeFromCart, getCartTotal, clearCart } = useStore();
 
   return (
     <AnimatePresence>
@@ -78,7 +78,7 @@ const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground">{item.name}</h3>
                           <p className="text-lg font-bold text-foreground mt-1">
-                            ₹{getAdjustedPrice(item.price)}
+                            ₹{item.price}
                           </p>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-2 bg-secondary rounded-lg">

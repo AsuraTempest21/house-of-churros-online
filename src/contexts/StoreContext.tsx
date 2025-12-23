@@ -10,12 +10,24 @@ export interface MenuItem {
   isVeg: boolean;
   isNew?: boolean;
   isBestseller?: boolean;
+  isExclusive?: boolean;
   rating?: number;
-  availability: string[]; // Location IDs where available
+  availability: string[];
+  remainingStock?: number;
+  ingredients?: string[];
+  macros?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  images?: string[];
+  variants?: { name: string; price: number }[];
 }
 
 export interface CartItem extends MenuItem {
   quantity: number;
+  selectedVariant?: string;
 }
 
 export interface Location {
@@ -23,132 +35,431 @@ export interface Location {
   name: string;
   address: string;
   timings: string;
-  priceModifier: number; // 1 = normal, 1.1 = 10% higher, etc.
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface Booking {
+  id: string;
+  type: 'table' | 'social';
+  date: string;
+  time: string;
+  guests: number;
+  location: string;
+  eventType?: string;
+}
+
+export interface OrderHistory {
+  id: string;
+  date: string;
+  items: { name: string; quantity: number; price: number }[];
+  total: number;
+  location: string;
 }
 
 export const locations: Location[] = [
-  { id: 'balewadi', name: 'Balewadi', address: 'High Street, Balewadi', timings: '10:00 AM - 11:00 PM', priceModifier: 1 },
-  { id: 'koregaon-park', name: 'Koregaon Park', address: 'Lane 5, Koregaon Park', timings: '10:00 AM - 12:00 AM', priceModifier: 1.1 },
-  { id: 'nibm', name: 'Tribeca Highstreet NIBM', address: 'NIBM Road', timings: '11:00 AM - 11:00 PM', priceModifier: 1 },
-  { id: 'kopa-mall', name: 'Kopa Mall', address: 'Phoenix Mall, Viman Nagar', timings: '10:00 AM - 10:00 PM', priceModifier: 1.05 },
-  { id: 'hinjewadi', name: 'Hinjewadi', address: 'Phase 1, Hinjewadi', timings: '9:00 AM - 11:00 PM', priceModifier: 0.95 },
-  { id: 'kothrud', name: 'Kothrud', address: 'Karve Road, Kothrud', timings: '10:00 AM - 10:30 PM', priceModifier: 1 },
+  { id: 'balewadi', name: 'Balewadi', address: 'High Street, Balewadi', timings: '10:00 AM - 11:00 PM' },
+  { id: 'koregaon-park', name: 'Koregaon Park', address: 'Lane 5, Koregaon Park', timings: '10:00 AM - 12:00 AM' },
+  { id: 'nibm', name: 'Tribeca Highstreet NIBM', address: 'NIBM Road', timings: '11:00 AM - 11:00 PM' },
+  { id: 'kopa-mall', name: 'Kopa Mall', address: 'Phoenix Mall, Viman Nagar', timings: '10:00 AM - 10:00 PM' },
+  { id: 'hinjewadi', name: 'Hinjewadi', address: 'Phase 1, Hinjewadi', timings: '9:00 AM - 11:00 PM' },
+  { id: 'kothrud', name: 'Kothrud', address: 'Karve Road, Kothrud', timings: '10:00 AM - 10:30 PM' },
 ];
 
 export const menuItems: MenuItem[] = [
-  // Bestsellers
+  // Churros
   {
-    id: '1',
-    name: 'Classic Spanish',
-    description: 'Crispy churros rolled in our signature cinnamon sugar blend.',
-    price: 199,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3-OOUg6MfCYpYoRTKwLIaxhAjt9kumKCBBYo84m4tdiwrhcMWz8uFn2ka3RvpTvDOSujbQBH-FYXbMU1L4i6xTpazisL1QFZdRji-wkKahPb0lTZsw_oIGf0ywMeJ6C-E0g75u-zrg1bh3OrU_XnEqVg1L_C7q8y1V2uP0MzuPIE8KD8Sjhb1a5yxh_fBdIowi6C3DW7VdVpkwMNLEUp3r_JHHpe93_ALCXspi0MSOmsKDc2n8c-_4MfhwCaYCv9PRMOcnC6f-Hny',
-    category: 'classics',
+    id: 'churros-3',
+    name: 'Churros (3 Pieces)',
+    description: 'Golden, ridged Spanish churros: crispy choux pastries rolled in cinnamon sugar and served with rich hot chocolate for dipping. A beloved street food.',
+    price: 150,
+    image: 'https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=400',
+    category: 'churros',
     isVeg: true,
     isBestseller: true,
     rating: 4.8,
     availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Cinnamon', 'Butter', 'Eggs', 'Salt'],
+    macros: { calories: 280, protein: 4, carbs: 38, fat: 12 },
+    images: ['https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=800', 'https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=800'],
   },
   {
-    id: '2',
-    name: 'Nutella Stuffed Churro',
-    description: 'Our bestseller! Warm, crispy dough filled with oozing warm Nutella chocolate.',
-    price: 249,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCybPqvPSduaMWn3f1oPXYw3KIxPoof4S84-jtcqchiJYHfTnet8D-Hy8YlA08VM0M9jfQAh3N6AWTrnLc1GauxYVWLWS1qURZBNokMUjMigLaHEhoHLTZeRr_v_cam8tRI0AYTi_YAqXk5peO7ep0ed2MboSGQ7kxtQhAd-Osj0SGPtIkJqXR_nTUPmNfxut1luiPWeFbeAOZV1T3mBb4ryIbjHDcuit7ycG8as8Uczi58XOJC4jSCG_AAN8p_jREaGqMUV_FVy591',
-    category: 'filled',
+    id: 'churros-5',
+    name: 'Churros (5 Pieces)',
+    description: 'Golden, ridged Spanish churros: crispy choux pastries rolled in cinnamon sugar and served with rich hot chocolate for dipping. A beloved street food.',
+    price: 190,
+    image: 'https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=400',
+    category: 'churros',
+    isVeg: true,
+    rating: 4.8,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Cinnamon', 'Butter', 'Eggs', 'Salt'],
+    macros: { calories: 460, protein: 7, carbs: 63, fat: 20 },
+    images: ['https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=800'],
+  },
+  {
+    id: 'churros-12',
+    name: 'Churros (12 Pieces)',
+    description: 'Golden, ridged Spanish churros: crispy choux pastries rolled in cinnamon sugar and served with rich hot chocolate for dipping. A beloved street food.',
+    price: 380,
+    image: 'https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=400',
+    category: 'churros',
+    isVeg: true,
+    rating: 4.8,
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Cinnamon', 'Butter', 'Eggs', 'Salt'],
+    macros: { calories: 1120, protein: 16, carbs: 152, fat: 48 },
+    images: ['https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=800'],
+  },
+  // Porras
+  {
+    id: 'porras-3',
+    name: 'Porras (3 Pieces)',
+    description: 'Traditional porras are thicker, fluffier Spanish fritters, golden and crispy outside, and pillowy soft inside. They\'re often dusted with sugar and served with hot chocolate.',
+    price: 150,
+    image: 'https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=400',
+    category: 'porras',
+    isVeg: true,
+    isBestseller: true,
+    rating: 4.7,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'hinjewadi', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Yeast', 'Salt', 'Water'],
+    macros: { calories: 320, protein: 5, carbs: 45, fat: 14 },
+    images: ['https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=800'],
+  },
+  {
+    id: 'porras-5',
+    name: 'Porras (5 Pieces)',
+    description: 'Traditional porras are thicker, fluffier Spanish fritters, golden and crispy outside, and pillowy soft inside. They\'re often dusted with sugar and served with hot chocolate.',
+    price: 190,
+    image: 'https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=400',
+    category: 'porras',
+    isVeg: true,
+    rating: 4.7,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Yeast', 'Salt', 'Water'],
+    macros: { calories: 530, protein: 8, carbs: 75, fat: 23 },
+    images: ['https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=800'],
+  },
+  {
+    id: 'porras-12',
+    name: 'Porras (12 Pieces)',
+    description: 'Traditional porras are thicker, fluffier Spanish fritters, golden and crispy outside, and pillowy soft inside. They\'re often dusted with sugar and served with hot chocolate.',
+    price: 380,
+    image: 'https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=400',
+    category: 'porras',
+    isVeg: true,
+    rating: 4.7,
+    availability: ['koregaon-park', 'nibm', 'kothrud'],
+    ingredients: ['Flour', 'Sugar', 'Yeast', 'Salt', 'Water'],
+    macros: { calories: 1280, protein: 20, carbs: 180, fat: 56 },
+    images: ['https://images.unsplash.com/photo-1626198226928-95884e0ab5b1?w=800'],
+  },
+  // Churro Dog
+  {
+    id: 'churro-dog',
+    name: 'Churro Dog',
+    description: 'Crispy hollow churro filled with a plant-based, protein-rich savoury veg roll. Served with ketchup and mustard.',
+    price: 225,
+    image: 'https://images.unsplash.com/photo-1619740455993-9d701c5e8b9e?w=400',
+    category: 'specials',
+    isVeg: true,
+    isNew: true,
+    isBestseller: true,
+    rating: 4.9,
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Churro dough', 'Plant-based filling', 'Spices', 'Ketchup', 'Mustard'],
+    macros: { calories: 380, protein: 12, carbs: 42, fat: 18 },
+    images: ['https://images.unsplash.com/photo-1619740455993-9d701c5e8b9e?w=800'],
+  },
+  // Papas Locas
+  {
+    id: 'papas-locas',
+    name: 'Papas Locas',
+    description: 'Spanish fries served with ketchup and mayo. The perfect savory companion to your churros.',
+    price: 150,
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400',
+    category: 'sides',
+    isVeg: true,
+    rating: 4.5,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Potatoes', 'Salt', 'Oil', 'Ketchup', 'Mayonnaise'],
+    macros: { calories: 320, protein: 4, carbs: 42, fat: 16 },
+    images: ['https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800'],
+    variants: [
+      { name: 'Salted', price: 100 },
+      { name: 'Paprika', price: 120 },
+    ],
+  },
+  // Extra Dips
+  {
+    id: 'dip-dark-chocolate',
+    name: 'Dark Chocolate Dip',
+    description: 'Rich 60% dark chocolate dipping sauce.',
+    price: 50,
+    image: 'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=400',
+    category: 'dips',
+    isVeg: true,
+    rating: 4.8,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Dark chocolate 60%', 'Cream', 'Butter'],
+    macros: { calories: 120, protein: 2, carbs: 14, fat: 7 },
+    images: ['https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=800'],
+  },
+  {
+    id: 'dip-hazelnut',
+    name: 'Chocolate Hazelnut Dip',
+    description: 'Creamy chocolate hazelnut sauce for dipping.',
+    price: 50,
+    image: 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400',
+    category: 'dips',
+    isVeg: true,
+    rating: 4.9,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Hazelnuts', 'Chocolate', 'Cream', 'Sugar'],
+    macros: { calories: 140, protein: 3, carbs: 12, fat: 9 },
+    images: ['https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=800'],
+  },
+  // Chocolates
+  {
+    id: 'suizo-chocolate',
+    name: 'Suizo Chocolate',
+    description: 'Premium Swiss-style hot chocolate, thick and creamy.',
+    price: 230,
+    image: 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400',
+    category: 'hot-beverages',
     isVeg: true,
     isBestseller: true,
     rating: 4.9,
     availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    isExclusive: true,
+    remainingStock: 15,
+    ingredients: ['Swiss chocolate', 'Milk', 'Cream', 'Sugar'],
+    macros: { calories: 280, protein: 6, carbs: 32, fat: 14 },
+    images: ['https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=800'],
   },
   {
-    id: '3',
-    name: 'Choco Dip Combo',
-    description: '6 pcs golden churros with rich dark chocolate dipping sauce.',
-    price: 249,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD7qo7Squ5V1ZehiIvmbtKn6bBoztZWgnl317r63BMeoJ3vj04bhxWAL1GXA09-nXiJPoVMCRRF1sbnYJz580wZfQX3SjhPTDgdBkTMO1TgDkCy6e16Amesg3lw5z5l-A6lTKJKzJqPReFCxMq8l4NV2gv2x2a8KdHoUdjmv8uHsxPWMk25XKbFJZxG4Qhhd8bjHH8COyij4TXeVeLKMeaUBnhRMLyNxEu_6S9NQJdhmIVUueUBIdh-CWD2X8KHh4J6Y0MqfcfQ6YOA',
-    category: 'combos',
+    id: 'hot-chocolate',
+    name: 'Hot Chocolate',
+    description: 'Classic Spanish hot chocolate, perfect for dipping churros.',
+    price: 190,
+    image: 'https://images.unsplash.com/photo-1517578239113-b03992dcdd25?w=400',
+    category: 'hot-beverages',
     isVeg: true,
-    isBestseller: true,
     rating: 4.7,
     availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Chocolate', 'Milk', 'Sugar', 'Cornstarch'],
+    macros: { calories: 220, protein: 5, carbs: 28, fat: 10 },
+    images: ['https://images.unsplash.com/photo-1517578239113-b03992dcdd25?w=800'],
+  },
+  // Hot Beverages
+  {
+    id: 'cortado',
+    name: 'Cortado',
+    description: 'Espresso cut with a small amount of warm milk.',
+    price: 200,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400',
+    category: 'hot-beverages',
+    isVeg: true,
+    rating: 4.6,
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Espresso', 'Steamed milk'],
+    macros: { calories: 60, protein: 3, carbs: 5, fat: 3 },
+    images: ['https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800'],
   },
   {
-    id: '4',
-    name: 'Spanish Latte',
-    description: 'Rich espresso with sweetened condensed milk. Hot or Cold.',
-    price: 149,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC26K9UHZ3uEQd1raRQxBzi87wKQbGwy6_AtZ-H8HlL1VH23084iDBzV2QL7aAVhCEjQVkYe8T2EaLuiT_ayoFwsLXHMT5x578NQ0YJ0x9nVWMx50J1K3o_wJRNaJkwzETMi99N5A914E_NP67RJCp3mMs5rv7A7m5IdME0xoLHFRooT0fJtMxrK3ciVnA8wyhbaJ_BWjgiMAJtKpKHSP1xDMjeAE00otmWLg27TxqApSw6dH7OUf9ueWBBX5w0Luw3LWFuu1SEJlDv',
-    category: 'beverages',
+    id: 'matcha-tea',
+    name: 'Matcha Tea',
+    description: 'Premium Japanese matcha, whisked to perfection.',
+    price: 250,
+    image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=400',
+    category: 'hot-beverages',
     isVeg: true,
-    isBestseller: true,
+    rating: 4.5,
+    availability: ['koregaon-park', 'nibm', 'kothrud'],
+    ingredients: ['Japanese matcha powder', 'Hot water', 'Milk'],
+    macros: { calories: 80, protein: 2, carbs: 8, fat: 4 },
+    images: ['https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=800'],
+  },
+  {
+    id: 'latte',
+    name: 'Latte',
+    description: 'Smooth espresso with steamed milk and a light foam.',
+    price: 220,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400',
+    category: 'hot-beverages',
+    isVeg: true,
     rating: 4.6,
     availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso', 'Steamed milk', 'Foam'],
+    macros: { calories: 120, protein: 6, carbs: 10, fat: 6 },
+    images: ['https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800'],
   },
   {
-    id: '5',
-    name: 'Caramel Stuffed',
-    description: 'Filled with authentic Argentine dulce de leche caramel.',
-    price: 229,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDi-CROCPNm9UATfTWIaUS_OuqTPjgFbRStSzUY4GQgictmZch-9bsOOctpPXcRiD094oVkFatUQo7vht_n_cmG5GsETY4hQWNq1LIJaGimCR7B99oIx3jr_X4gx1C1cuVslQeXHDWSDE-qPe2s7pllXRrBvC0pjCNT-ZcPkwIEkSEMRs6_L2xlgK4B_Zj8JaI62jyytqnLYuCdDhDOvdI6dosyKn7009u5w810OcCAnmP_NwIwqw_YEXAJEHrtUxNG_IQ4aZPUDx_t',
-    category: 'filled',
+    id: 'cappuccino',
+    name: 'Cappuccino',
+    description: 'Equal parts espresso, steamed milk, and foam.',
+    price: 220,
+    image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400',
+    category: 'hot-beverages',
     isVeg: true,
-    isNew: true,
-    rating: 4.8,
-    availability: ['koregaon-park', 'nibm', 'hinjewadi'],
+    rating: 4.7,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso', 'Steamed milk', 'Milk foam'],
+    macros: { calories: 100, protein: 5, carbs: 8, fat: 5 },
+    images: ['https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800'],
   },
   {
-    id: '6',
-    name: 'Spanish Hot Chocolate',
-    description: 'Thick, rich, and velvety. The traditional way to enjoy churros.',
-    price: 199,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdaeWodHLOmICo19gBghkiJltDE1Y3wSjETVep1DRDfhX8WqJojEUBB3_JQrT4yaKKFZgfvi6VykU4LE9t9_E3Z5QoTBzJD3AElAiuD32CLXGY8QOnPGellTBIGFvNsiTuWcLNuCWerV4_MY7w50xkNT6GPCw19IGnHy9aYP6YNmncNjFWOaRITuOCD0LM1rIJSQUFWn6-dDnAdnrEZJWlrF_MM3pSDQaaAoRwKGG8DEdnGUSyh4JAojfe6mgNAskJm1nprRHGw9tl',
-    category: 'beverages',
+    id: 'americano',
+    name: 'Americano',
+    description: 'Espresso diluted with hot water for a smooth, rich taste.',
+    price: 150,
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400',
+    category: 'hot-beverages',
     isVeg: true,
+    rating: 4.4,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso', 'Hot water'],
+    macros: { calories: 15, protein: 1, carbs: 2, fat: 0 },
+    images: ['https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800'],
+  },
+  {
+    id: 'espresso',
+    name: 'Espresso',
+    description: 'Strong, concentrated coffee shot.',
+    price: 120,
+    image: 'https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=400',
+    category: 'hot-beverages',
+    isVeg: true,
+    rating: 4.5,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso beans'],
+    macros: { calories: 5, protein: 0, carbs: 1, fat: 0 },
+    images: ['https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?w=800'],
+  },
+  // Cold Beverages
+  {
+    id: 'affogato',
+    name: 'Affogato',
+    description: 'Vanilla ice cream drowned in a shot of hot espresso.',
+    price: 230,
+    image: 'https://images.unsplash.com/photo-1579992357154-faf4bde95b3d?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    isBestseller: true,
     rating: 4.9,
-    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Vanilla ice cream', 'Espresso'],
+    macros: { calories: 180, protein: 3, carbs: 22, fat: 9 },
+    images: ['https://images.unsplash.com/photo-1579992357154-faf4bde95b3d?w=800'],
   },
   {
-    id: '7',
-    name: 'Glazed Churros',
-    description: 'Golden churros coated in a sweet, sticky sugar glaze.',
-    price: 169,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDUpUAFJ9Mx8hExAFIrhVZAcGjFCSKW98L9HKBWOkdP8tfgKaHSuN9czvMhBwkEBJI3GlnFCM2uafSLuAQfSCeogEYa-VI7qyA7Qv2M38d6DUfpswKMaY9r5z8Xagu-bxwQ017UKfE60SliptJ9HuA4w92qmSAQF2jjgRJNpn_scDYRUZmTwqsSCbJm4LYq_bkZz6iMCdmSkoSMxCG8zuh5RSvLWSStFRptx5LhkOGOho7amtp2Fy6qznQN1kkb1OR-5wYA8LQQ64oD',
-    category: 'classics',
+    id: 'iced-matcha',
+    name: 'Iced Matcha',
+    description: 'Chilled matcha latte with oat or regular milk.',
+    price: 250,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=400',
+    category: 'cold-beverages',
     isVeg: true,
-    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
-  },
-  {
-    id: '8',
-    name: 'Dark Chocolate Bomb',
-    description: '70% dark chocolate ganache filling for true chocolate lovers.',
-    price: 239,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDxAt4HPhOeSt9eX3bn0Cu6dXNvhENDr_dbmK9o9P64-WrPur7UJZBcWybIC3jaz_nz0fQpbz1ech18ao__v9ChPxIKkAVWj0rRY4_movgEz8p6zrP1o3yIJmhHB9ElKco9L4TvIGXutO7wpaTBp0-Q98OCBQF3dUWi1A5T-D4azTtjV-b2krkpW9_UIOCkgh7WGxOONwvm6a3P0YnM9C5lI55H_vg1iGV-gZEYTqLqTTYya6gPcAwck9XXZwaEHf1uqg-jt5bXLgsP',
-    category: 'filled',
-    isVeg: true,
-    availability: ['koregaon-park', 'nibm', 'kopa-mall'],
-  },
-  // Dips
-  {
-    id: '9',
-    name: 'Dark Chocolate Dip',
-    description: 'Rich 60% dark chocolate dipping sauce.',
-    price: 49,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCjgtVjgS5xjnKFOYoSzd-7nX_GuotmG-ihMZ4eGfiQaj3VLWxwAJIzO6yCjRNv-ZYZnDpsS4_3dJUgYGD_CCYVWVY1Lc6PeGeHMAuL5moj41yUTTRXuq5hfEmXEcO_JcdJ-7YHgYb9i1XIPY308Yp-JElFTIIo3_J6QAThB1l0BSmUqjR50IH6ZDQU3lGD0wKuGUiUXisFY5PVV9UVlB18YDmukrtMGDLSQ-OOEfwmG_2VGqpgW_uNcnQPc9SnPn7erJbwHOQun4l',
-    category: 'dips',
-    isVeg: true,
-    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
-  },
-  {
-    id: '10',
-    name: 'Berry Compote Dip',
-    description: 'Sweet and tangy mixed berry sauce.',
-    price: 59,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDi4Qv-CjOLJhhpgQxNWKCr_e7xAJYsL93C6l1m2LNPGBtJnLSwyB2f6NXm4rg6VHs-igTnBShcwJxN1sxsgtKs1za6Ta8Gw4b_SjjFTp9XGnsg2mLGttp4eY7Iout8kusOlkUseZILmmoGpi4A3d3emn8G4irxaDE9zjImWJeeIZ95rgK0q5TIUfb0oxFfo-ie0GJEyNMnXx-HVmwoDXy1RazpHaxN3j9cKc7ZmTdLru3nqyu-rVm1OL3RUAckj3qKixDxJ6RQrRjK',
-    category: 'dips',
-    isVeg: true,
-    isNew: true,
+    rating: 4.6,
     availability: ['koregaon-park', 'nibm', 'kothrud'],
+    ingredients: ['Matcha powder', 'Milk', 'Ice'],
+    macros: { calories: 100, protein: 3, carbs: 12, fat: 4 },
+    images: ['https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800'],
+  },
+  {
+    id: 'classic-cold-coffee',
+    name: 'Classic Cold Coffee',
+    description: 'Chilled blended coffee with milk and ice.',
+    price: 220,
+    image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.5,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Coffee', 'Milk', 'Sugar', 'Ice'],
+    macros: { calories: 160, protein: 4, carbs: 24, fat: 6 },
+    images: ['https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800'],
+  },
+  {
+    id: 'iced-americano',
+    name: 'Iced Americano',
+    description: 'Chilled espresso with cold water and ice.',
+    price: 200,
+    image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.4,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso', 'Cold water', 'Ice'],
+    macros: { calories: 15, protein: 1, carbs: 2, fat: 0 },
+    images: ['https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800'],
+  },
+  {
+    id: 'frappuccino',
+    name: 'Frappuccino',
+    description: 'Blended iced coffee available in caramel, vanilla, hazelnut, or Irish flavors.',
+    price: 240,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.7,
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Coffee', 'Milk', 'Ice', 'Flavor syrup', 'Whipped cream'],
+    macros: { calories: 280, protein: 4, carbs: 42, fat: 10 },
+    images: ['https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800'],
+    variants: [
+      { name: 'Caramel', price: 240 },
+      { name: 'Vanilla', price: 240 },
+      { name: 'Hazelnut', price: 240 },
+      { name: 'Irish', price: 240 },
+    ],
+  },
+  {
+    id: 'iced-latte',
+    name: 'Iced Latte',
+    description: 'Chilled espresso with cold milk over ice.',
+    price: 220,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.6,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Espresso', 'Cold milk', 'Ice'],
+    macros: { calories: 100, protein: 5, carbs: 8, fat: 5 },
+    images: ['https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800'],
+  },
+  {
+    id: 'iced-cafe-mocha',
+    name: 'Iced Cafe Mocha',
+    description: 'Chilled espresso with chocolate and milk.',
+    price: 240,
+    image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.7,
+    availability: ['koregaon-park', 'nibm', 'kopa-mall', 'kothrud'],
+    ingredients: ['Espresso', 'Chocolate syrup', 'Milk', 'Ice'],
+    macros: { calories: 200, protein: 5, carbs: 28, fat: 8 },
+    images: ['https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800'],
+  },
+  {
+    id: 'cold-chocolate',
+    name: 'Cold Chocolate',
+    description: 'Chilled chocolate milk, rich and creamy.',
+    price: 240,
+    image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400',
+    category: 'cold-beverages',
+    isVeg: true,
+    rating: 4.8,
+    availability: ['balewadi', 'koregaon-park', 'nibm', 'kopa-mall', 'hinjewadi', 'kothrud'],
+    ingredients: ['Chocolate', 'Milk', 'Ice', 'Cream'],
+    macros: { calories: 260, protein: 6, carbs: 34, fat: 12 },
+    images: ['https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=800'],
   },
 ];
 
@@ -157,17 +468,17 @@ export const offers = [
     id: '1',
     title: '20% OFF on First Order',
     description: 'Use code CHURRO20 for 20% off your first order!',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Y9EHpbcYXj8GQ3NQtyJEEd_eqZSg41JrFTD9GbSbjyIm59I0gqXUEApwj3tpryIO21O1-U-VZw4ei0D0cuOKR1LKcl6HK6kyRxncPE-J38TgleyZiL03poyNOaaqQpbw0CgwROcOeOhIp2I_veZ9i-aIWV-EGTkxiBgNZTtBb8PsVgVOYLFpZBS-VfokNAAO7d4AAWhCk6ns_B1fdXJqKp_yBqLveh9AEn3aHfz38QKQwq7f6BabkXitApseQOJLGRf4EcsdrST3',
+    image: 'https://images.unsplash.com/photo-1624371414361-e670edf4898d?w=600',
     badge: 'Limited Time',
-    linkedItem: '2',
+    linkedItem: 'churros-3',
   },
   {
     id: '2',
-    title: 'Combo Deal: Churros + Latte',
-    description: 'Get a Spanish Latte FREE with any stuffed churro!',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsRpIUREkEniioyGFJ1qVwACZp4pi6QL_cQIQULgf3gvzBIbw5H32kC1XiHOf18AYQmpSwzJCuR6IDPLwdhYInB2hIMPgQYcZCmuQ2WacL77xKipIfFt7MJ0eYvFs2MBN_UUhH2j0gnGt9KLO0x8H0_iZ1s8RqC0SlN38cJRj06o14mdYE-W9ERXGfjIEjI1uNvw5oiM89ofLXHn1rlyI1n8E171eSyJzYZxFI6aCjHuu9Ekaex8flCzGo8Cyr9RsOhqQ3ucxAZcnL',
+    title: 'Combo Deal: Churros + Hot Chocolate',
+    description: 'Get Hot Chocolate at ₹150 with any churros order!',
+    image: 'https://images.unsplash.com/photo-1517578239113-b03992dcdd25?w=600',
     badge: 'New',
-    linkedItem: '5',
+    linkedItem: 'hot-chocolate',
   },
 ];
 
@@ -175,41 +486,52 @@ interface StoreContextType {
   selectedLocation: Location;
   setSelectedLocation: (location: Location) => void;
   cart: CartItem[];
-  addToCart: (item: MenuItem) => void;
+  addToCart: (item: MenuItem, variant?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
-  getAdjustedPrice: (basePrice: number) => number;
   getAvailableItems: () => MenuItem[];
+  // Auth
+  user: User | null;
+  setUser: (user: User | null) => void;
+  isAuthenticated: boolean;
+  // Bookings
+  bookings: Booking[];
+  addBooking: (booking: Omit<Booking, 'id'>) => void;
+  // Order History
+  orderHistory: OrderHistory[];
+  addOrder: (order: Omit<OrderHistory, 'id'>) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedLocation, setSelectedLocation] = useState<Location>(locations[1]); // Default to Koregaon Park
+  const [selectedLocation, setSelectedLocation] = useState<Location>(locations[1]);
   const [cart, setCart] = useState<CartItem[]>([]);
-
-  const getAdjustedPrice = (basePrice: number): number => {
-    return Math.round(basePrice * selectedLocation.priceModifier);
-  };
+  const [user, setUser] = useState<User | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [orderHistory, setOrderHistory] = useState<OrderHistory[]>([]);
 
   const getAvailableItems = (): MenuItem[] => {
     return menuItems.filter(item => item.availability.includes(selectedLocation.id));
   };
 
-  const addToCart = (item: MenuItem) => {
+  const addToCart = (item: MenuItem, variant?: string) => {
+    const cartKey = variant ? `${item.id}-${variant}` : item.id;
     setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
+      const existingItem = prevCart.find(cartItem => 
+        variant ? `${cartItem.id}-${cartItem.selectedVariant}` === cartKey : cartItem.id === item.id
+      );
       if (existingItem) {
         return prevCart.map(cartItem =>
-          cartItem.id === item.id
+          (variant ? `${cartItem.id}-${cartItem.selectedVariant}` === cartKey : cartItem.id === item.id)
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
       }
-      return [...prevCart, { ...item, quantity: 1 }];
+      return [...prevCart, { ...item, quantity: 1, selectedVariant: variant }];
     });
   };
 
@@ -234,11 +556,19 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const getCartTotal = (): number => {
-    return cart.reduce((total, item) => total + getAdjustedPrice(item.price) * item.quantity, 0);
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
   const getCartCount = (): number => {
     return cart.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  const addBooking = (booking: Omit<Booking, 'id'>) => {
+    setBookings(prev => [...prev, { ...booking, id: Date.now().toString() }]);
+  };
+
+  const addOrder = (order: Omit<OrderHistory, 'id'>) => {
+    setOrderHistory(prev => [...prev, { ...order, id: Date.now().toString() }]);
   };
 
   return (
@@ -253,8 +583,14 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         clearCart,
         getCartTotal,
         getCartCount,
-        getAdjustedPrice,
         getAvailableItems,
+        user,
+        setUser,
+        isAuthenticated: !!user,
+        bookings,
+        addBooking,
+        orderHistory,
+        addOrder,
       }}
     >
       {children}
