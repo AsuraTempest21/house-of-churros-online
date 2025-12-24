@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/contexts/StoreContext';
 import { Button } from '@/components/ui/button';
+import CheckoutOverlay from './CheckoutOverlay';
 
 interface CartOverlayProps {
   isOpen: boolean;
@@ -10,6 +12,11 @@ interface CartOverlayProps {
 
 const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
   const { cart, updateQuantity, removeFromCart, getCartTotal, clearCart } = useStore();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  const handleBuy = () => {
+    setCheckoutOpen(true);
+  };
 
   return (
     <AnimatePresence>
@@ -64,7 +71,7 @@ const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
                   <ul className="space-y-4">
                     {cart.map((item, index) => (
                       <motion.li
-                        key={item.id}
+                        key={`${item.id}-${item.selectedVariant || ''}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
@@ -77,6 +84,9 @@ const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
                         />
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground">{item.name}</h3>
+                          {item.selectedVariant && (
+                            <p className="text-xs text-muted-foreground">{item.selectedVariant}</p>
+                          )}
                           <p className="text-lg font-bold text-foreground mt-1">
                             ₹{item.price}
                           </p>
@@ -128,15 +138,26 @@ const CartOverlay = ({ isOpen, onClose }: CartOverlayProps) => {
                       Clear Cart
                     </Button>
                     <Button
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleBuy}
+                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                     >
-                      Checkout
+                      Buy Now
                     </Button>
                   </div>
                 </div>
               )}
             </div>
           </motion.div>
+
+          {/* Checkout Overlay */}
+          <CheckoutOverlay 
+            isOpen={checkoutOpen} 
+            onClose={() => setCheckoutOpen(false)}
+            onComplete={() => {
+              setCheckoutOpen(false);
+              onClose();
+            }}
+          />
         </>
       )}
     </AnimatePresence>

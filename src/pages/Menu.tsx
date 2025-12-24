@@ -1,36 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Search, MapPin, ChevronDown, Flame, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, ChevronDown, Flame, Star } from 'lucide-react';
 import MenuItemCard from '@/components/MenuItemCard';
 import LocationOverlay from '@/components/LocationOverlay';
 import CartOverlay from '@/components/CartOverlay';
 import { useStore } from '@/contexts/StoreContext';
 
+// Synced categories matching Index.tsx
 const categories = [
+  { id: 'all', label: 'All', icon: Star },
   { id: 'bestsellers', label: 'Bestsellers', icon: Flame },
-  { id: 'classics', label: 'The Classics', icon: null },
-  { id: 'filled', label: 'Filled Churros', icon: null },
-  { id: 'dips', label: 'Signature Dips', icon: null },
-  { id: 'beverages', label: 'Beverages', icon: null },
-  { id: 'combos', label: 'Combos', icon: null },
+  { id: 'churros', label: 'Churros' },
+  { id: 'porras', label: 'Porras' },
+  { id: 'specials', label: 'Specials' },
+  { id: 'dips', label: 'Dips' },
+  { id: 'hot-beverages', label: 'Hot Drinks' },
+  { id: 'cold-beverages', label: 'Cold Drinks' },
 ];
 
 const Menu = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState('bestsellers');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [locationOpen, setLocationOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   
   const { selectedLocation, getAvailableItems, getCartCount } = useStore();
   const cartCount = getCartCount();
   
   const availableItems = getAvailableItems();
   
-  // Handle item highlight from URL
+  // Handle category from URL
+  const categoryParam = searchParams.get('category');
   const highlightedItemId = searchParams.get('item');
+  
+  useEffect(() => {
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam]);
   
   useEffect(() => {
     if (highlightedItemId) {
@@ -42,18 +51,10 @@ const Menu = () => {
   }, [highlightedItemId, availableItems]);
 
   const filteredItems = availableItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === 'bestsellers' 
-      ? item.isBestseller 
-      : item.category === activeCategory;
-    return matchesSearch && (activeCategory === 'all' || matchesCategory);
+    if (activeCategory === 'all') return true;
+    if (activeCategory === 'bestsellers') return item.isBestseller;
+    return item.category === activeCategory;
   });
-
-  const groupedItems = {
-    featured: filteredItems.filter(item => item.isBestseller || item.isNew).slice(0, 2),
-    regular: filteredItems.filter(item => !item.isBestseller && !item.isNew),
-  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -85,13 +86,7 @@ const Menu = () => {
             </h2>
           </motion.button>
           
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setCartOpen(true)}
-            className="relative flex items-center justify-center p-2 rounded-full hover:bg-secondary transition-colors"
-          >
-            <Search className="h-6 w-6 text-foreground" />
-          </motion.button>
+          <div className="w-10" /> {/* Spacer for alignment */}
         </div>
         
         {/* Location Notice */}
@@ -170,49 +165,28 @@ const Menu = () => {
 
       {/* Menu Items */}
       <div className="p-4 space-y-6">
-        {/* Featured Section */}
-        {groupedItems.featured.length > 0 && (
-          <div>
-            <h2 className="text-foreground text-xl font-bold mb-4 flex items-center gap-2">
-              <Flame className="h-5 w-5 text-primary" />
-              {selectedLocation.name} Favorites
-            </h2>
-            <div className="flex flex-col gap-4">
-              {groupedItems.featured.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <MenuItemCard item={item} variant="featured" />
-                </motion.div>
-              ))}
-            </div>
+        <div>
+          <h2 className="text-foreground text-xl font-bold mb-4 flex items-center gap-2">
+            {activeCategory === 'bestsellers' && <Flame className="h-5 w-5 text-primary" />}
+            {categories.find(c => c.id === activeCategory)?.label || 'All Items'}
+            <span className="text-sm font-normal text-muted-foreground">
+              ({filteredItems.length} items)
+            </span>
+          </h2>
+          <div className="flex flex-col gap-4">
+            {filteredItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className={highlightedItemId === item.id ? 'ring-2 ring-primary rounded-xl' : ''}
+              >
+                <MenuItemCard item={item} variant="list" />
+              </motion.div>
+            ))}
           </div>
-        )}
-
-        {/* Regular Items */}
-        {filteredItems.length > 0 && (
-          <div>
-            <h2 className="text-foreground text-xl font-bold mb-4">
-              {categories.find(c => c.id === activeCategory)?.label || 'All Items'}
-            </h2>
-            <div className="flex flex-col gap-4">
-              {filteredItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={highlightedItemId === item.id ? 'ring-2 ring-primary rounded-xl' : ''}
-                >
-                  <MenuItemCard item={item} variant="list" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
 
         {filteredItems.length === 0 && (
           <div className="text-center py-12">

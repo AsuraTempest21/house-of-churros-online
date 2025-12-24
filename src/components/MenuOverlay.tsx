@@ -1,6 +1,10 @@
-import { X, Info, UtensilsCrossed, CalendarDays, Users } from 'lucide-react';
+import { useState } from 'react';
+import { X, Info, UtensilsCrossed, CalendarDays, Users, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '@/contexts/StoreContext';
+import AuthOverlay from './AuthOverlay';
+import ProfileOverlay from './ProfileOverlay';
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -16,10 +20,21 @@ const menuItems = [
 
 const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useStore();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleNavigation = (path: string) => {
     navigate(path);
     onClose();
+  };
+
+  const handleProfileClick = () => {
+    if (isAuthenticated) {
+      setProfileOpen(true);
+    } else {
+      setAuthOpen(true);
+    }
   };
 
   return (
@@ -61,6 +76,32 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
                 </motion.button>
               </div>
 
+              {/* Profile Button */}
+              <div className="p-4 border-b border-border">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleProfileClick}
+                  className="flex items-center gap-4 w-full p-4 rounded-xl bg-card border border-border hover:bg-secondary transition-colors"
+                >
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/20">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    {isAuthenticated ? (
+                      <>
+                        <p className="text-base font-bold text-foreground">{user?.name}</p>
+                        <p className="text-sm text-muted-foreground">View Profile</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-base font-bold text-foreground">Sign In</p>
+                        <p className="text-sm text-muted-foreground">Login or create account</p>
+                      </>
+                    )}
+                  </div>
+                </motion.button>
+              </div>
+
               {/* Menu Items */}
               <nav className="flex-1 p-6">
                 <ul className="space-y-2">
@@ -95,6 +136,10 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
               </div>
             </div>
           </motion.div>
+
+          {/* Auth & Profile Overlays */}
+          <AuthOverlay isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+          <ProfileOverlay isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
         </>
       )}
     </AnimatePresence>

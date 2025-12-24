@@ -1,5 +1,6 @@
 import { Plus, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { MenuItem, useStore } from '@/contexts/StoreContext';
 
 interface MenuItemCardProps {
@@ -9,13 +10,24 @@ interface MenuItemCardProps {
 
 const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
   const { addToCart } = useStore();
+  const navigate = useNavigate();
   const adjustedPrice = item.price;
+
+  const handleCardClick = () => {
+    navigate(`/item/${item.id}`);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart(item);
+  };
 
   if (variant === 'featured') {
     return (
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="flex flex-col overflow-hidden rounded-xl bg-card border border-border shadow-xl"
+        onClick={handleCardClick}
+        className="flex flex-col overflow-hidden rounded-xl bg-card border border-border shadow-xl cursor-pointer"
       >
         <div
           className="relative w-full h-48 bg-cover bg-center"
@@ -50,7 +62,7 @@ const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
             <p className="text-foreground text-lg font-bold">₹{adjustedPrice}</p>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => addToCart(item)}
+              onClick={handleAddToCart}
               className="flex items-center gap-1 px-4 py-2 bg-foreground text-background rounded-lg font-bold text-sm hover:bg-foreground/90 transition-colors"
             >
               Add
@@ -66,7 +78,8 @@ const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
     return (
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className="flex items-start gap-3 p-3 bg-card rounded-xl border border-border shadow-md"
+        onClick={handleCardClick}
+        className="flex items-start gap-3 p-3 bg-card rounded-xl border border-border shadow-md cursor-pointer"
       >
         <div
           className="w-24 h-24 shrink-0 bg-cover bg-center rounded-lg"
@@ -91,7 +104,7 @@ const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
             <p className="text-foreground text-base font-bold">₹{adjustedPrice}</p>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => addToCart(item)}
+              onClick={handleAddToCart}
               className="flex items-center justify-center px-3 py-2 border border-foreground text-foreground rounded-lg text-xs font-bold uppercase hover:bg-foreground hover:text-background transition-colors"
             >
               Add
@@ -106,7 +119,8 @@ const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
-      className="flex flex-col gap-3 p-3 bg-card rounded-xl border border-border shadow-lg"
+      onClick={handleCardClick}
+      className="flex flex-col gap-3 p-3 bg-card rounded-xl border border-border shadow-lg cursor-pointer"
     >
       <div className="aspect-square w-full relative rounded-lg overflow-hidden">
         <img
@@ -116,7 +130,7 @@ const MenuItemCard = ({ item, variant = 'grid' }: MenuItemCardProps) => {
         />
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => addToCart(item)}
+          onClick={handleAddToCart}
           className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background shadow-md hover:scale-110 transition-transform"
         >
           <Plus className="h-5 w-5" />

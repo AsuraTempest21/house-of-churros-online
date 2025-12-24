@@ -8,19 +8,32 @@ import LocationOverlay from '@/components/LocationOverlay';
 import CartOverlay from '@/components/CartOverlay';
 import OfferCard from '@/components/OfferCard';
 import MenuItemCard from '@/components/MenuItemCard';
-import { useStore, offers, menuItems } from '@/contexts/StoreContext';
+import { useStore, offers } from '@/contexts/StoreContext';
+
+// Synced categories matching Menu.tsx
+const categories = [
+  { id: 'all', label: 'All', icon: Star },
+  { id: 'churros', label: 'Churros' },
+  { id: 'porras', label: 'Porras' },
+  { id: 'specials', label: 'Specials' },
+  { id: 'hot-beverages', label: 'Hot Drinks' },
+  { id: 'cold-beverages', label: 'Cold Drinks' },
+];
 
 const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   
-  const { selectedLocation, getAvailableItems } = useStore();
+  const { getAvailableItems } = useStore();
   const navigate = useNavigate();
   
   const availableItems = getAvailableItems();
   const bestsellers = availableItems.filter(item => item.isBestseller).slice(0, 4);
-  const categories = ['All', 'Classic', 'Stuffed', 'Dips', 'Coffee'];
+
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/menu?category=${categoryId}`);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -81,7 +94,7 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Menu Categories */}
+        {/* Menu Categories - Synced with Menu page */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-4">
             <h2 className="text-foreground text-xl font-bold">Menu Categories</h2>
@@ -89,20 +102,20 @@ const Index = () => {
           <div className="flex gap-3 px-4 overflow-x-auto no-scrollbar pb-2">
             {categories.map((category, index) => (
               <motion.button
-                key={category}
+                key={category.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/menu')}
+                onClick={() => handleCategoryClick(category.id)}
                 className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-xl px-4 shadow-sm transition-all ${
                   index === 0
                     ? 'bg-foreground text-background'
                     : 'bg-card border border-border text-foreground hover:bg-secondary'
                 }`}
               >
-                {index === 0 && <Star className="h-4 w-4" />}
-                <span className="text-sm font-bold">{category}</span>
+                {category.icon && <category.icon className="h-4 w-4" />}
+                <span className="text-sm font-bold">{category.label}</span>
               </motion.button>
             ))}
           </div>
@@ -116,7 +129,7 @@ const Index = () => {
               Bestsellers
             </h3>
             <button
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/menu?category=bestsellers')}
               className="text-muted-foreground text-sm font-bold flex items-center gap-0.5 hover:text-foreground transition-colors"
             >
               See all

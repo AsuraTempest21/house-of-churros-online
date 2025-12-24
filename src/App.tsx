@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StoreProvider } from "@/contexts/StoreContext";
 import Index from "./pages/Index";
 import Menu from "./pages/Menu";
+import ItemDetail from "./pages/ItemDetail";
 import About from "./pages/About";
 import Booking from "./pages/Booking";
 import Social from "./pages/Social";
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/menu" element={<Menu />} />
+            <Route path="/item/:id" element={<ItemDetail />} />
             <Route path="/about" element={<About />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/social" element={<Social />} />
