@@ -62,7 +62,7 @@ const LocationOverlay = ({ isOpen, onClose }: LocationOverlayProps) => {
             </div>
 
             {/* Locations List - Scrollable */}
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto overscroll-contain">
               <div className="p-4">
                 <ul className="space-y-3">
                   {locations.map((location, index) => {
@@ -114,7 +114,7 @@ const LocationOverlay = ({ isOpen, onClose }: LocationOverlayProps) => {
                   })}
                 </ul>
               </div>
-            </ScrollArea>
+            </div>
           </motion.div>
         </>
       )}
